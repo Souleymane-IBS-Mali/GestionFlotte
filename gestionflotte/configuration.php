@@ -23,221 +23,135 @@
  *	\ingroup    gestionflotte
  *	\brief      Home page of gestionflotte top menu
  */
-
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
-	$res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-}
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) {
-	$i--;
-	$j--;
-}
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) {
-	$res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-}
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) {
-	$res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-}
-// Try main.inc.php using relative path
-if (!$res && file_exists("../main.inc.php")) {
-	$res = @include "../main.inc.php";
-}
-if (!$res && file_exists("../../main.inc.php")) {
-	$res = @include "../../main.inc.php";
-}
-if (!$res && file_exists("../../../main.inc.php")) {
-	$res = @include "../../../main.inc.php";
-}
-if (!$res) {
-	die("Include of main fails");
-}
-
-require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
-
-// Load translation files required by the page
-$langs->loadLangs(array("gestionflotte@gestionflotte"));
-
-$action = GETPOST('action', 'aZ09');
-
-$now = dol_now();
-$max = getDolGlobalInt('MAIN_SIZE_SHORTLIST_LIMIT', 5);
-
-// Security check - Protection if external user
-$socid = GETPOST('socid', 'int');
-if (isset($user->socid) && $user->socid > 0) {
-	$action = '';
-	$socid = $user->socid;
-}
-
-// Security check (enable the most restrictive one)
-//if ($user->socid > 0) accessforbidden();
-//if ($user->socid > 0) $socid = $user->socid;
-//if (!isModEnabled('gestionflotte')) {
-//	accessforbidden('Module not enabled');
-//}
-//if (! $user->hasRight('gestionflotte', 'myobject', 'read')) {
-//	accessforbidden();
-//}
-//restrictedArea($user, 'gestionflotte', 0, 'gestionflotte_myobject', 'myobject', '', 'rowid');
-//if (empty($user->admin)) {
-//	accessforbidden('Must be admin');
-//}
-
-
-/*
- * Actions
- */
-
-// None
-
+require '../main.inc.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/gestionflotte/lib/gestionflotte.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/gestionflotte/class/html.form.class.php';
 
 /*
  * View
  */
 
+$action = GETPOST('action', 'alpha');
+$id = GETPOST('id', 'int');
+$message = '';
 $form = new Form($db);
-$formfile = new FormFile($db);
 
-llxHeader("", $langs->trans("GestionFlotteArea"), '', '', 0, 0, '', '', '', 'mod-gestionflotte page-index');
-
-print load_fiche_titre($langs->trans("GestionFlotteArea"), '', 'gestionflotte.png@gestionflotte');
-
-print '<div class="fichecenter"><div class="fichethirdleft">';
-
-
-/* BEGIN MODULEBUILDER DRAFT MYOBJECT
-// Draft MyObject
-if (isModEnabled('gestionflotte') && $user->hasRight('gestionflotte', 'read')) {
-	$langs->load("orders");
-
-	$sql = "SELECT c.rowid, c.ref, c.ref_client, c.total_ht, c.tva as total_tva, c.total_ttc, s.rowid as socid, s.nom as name, s.client, s.canvas";
-	$sql.= ", s.code_client";
-	$sql.= " FROM ".MAIN_DB_PREFIX."commande as c";
-	$sql.= ", ".MAIN_DB_PREFIX."societe as s";
-	$sql.= " WHERE c.fk_soc = s.rowid";
-	$sql.= " AND c.fk_statut = 0";
-	$sql.= " AND c.entity IN (".getEntity('commande').")";
-	if ($socid)	$sql.= " AND c.fk_soc = ".((int) $socid);
-
-	$resql = $db->query($sql);
-	if ($resql)
-	{
-		$total = 0;
-		$num = $db->num_rows($resql);
-
-		print '<table class="noborder centpercent">';
-		print '<tr class="liste_titre">';
-		print '<th colspan="3">'.$langs->trans("DraftMyObjects").($num?'<span class="badge marginleftonlyshort">'.$num.'</span>':'').'</th></tr>';
-
-		$var = true;
-		if ($num > 0)
-		{
-			$i = 0;
-			while ($i < $num)
-			{
-
-				$obj = $db->fetch_object($resql);
-				print '<tr class="oddeven"><td class="nowrap">';
-
-				$myobjectstatic->id=$obj->rowid;
-				$myobjectstatic->ref=$obj->ref;
-				$myobjectstatic->ref_client=$obj->ref_client;
-				$myobjectstatic->total_ht = $obj->total_ht;
-				$myobjectstatic->total_tva = $obj->total_tva;
-				$myobjectstatic->total_ttc = $obj->total_ttc;
-
-				print $myobjectstatic->getNomUrl(1);
-				print '</td>';
-				print '<td class="nowrap">';
-				print '</td>';
-				print '<td class="right" class="nowrap">'.price($obj->total_ttc).'</td></tr>';
-				$i++;
-				$total += $obj->total_ttc;
-			}
-			if ($total>0)
-			{
-
-				print '<tr class="liste_total"><td>'.$langs->trans("Total").'</td><td colspan="2" class="right">'.price($total)."</td></tr>";
+//Enregistrement des types d'alerte par defaut
+    $array_type = ["kilometrage"];
+	$array_val = ["100"];
+	$ind = 0;
+    $covSql = "SELECT * FROM ".MAIN_DB_PREFIX."gestion_flotte_alerte";
+    $result = $db->query($covSql);               
+	if($result){
+		$num = $db->num_rows($result);
+		if($num == 0){
+			foreach ($array_type as $key => $value) {
+				$sql_insert = 'INSERT INTO '.MAIN_DB_PREFIX.'gestion_flotte_alerte (nom, valeur, fk_user)';
+				$sql_insert .= ' VALUES("'.$value.'", "'.$array_val[$ind].'", '.$user->id.')';
+				$result_insert = $db->query($sql_insert);
+				$ind ++;
 			}
 		}
-		else
-		{
+	}
 
-			print '<tr class="oddeven"><td colspan="3" class="opacitymedium">'.$langs->trans("NoOrder").'</td></tr>';
+if($action == 'edit_Kilometrage'){
+	$km = GETPOST('kilometrage', 'int');
+	if(empty($km)){
+		$message = 'Le champ "KILOMETRAGE" est obligatoire';
+	}
+	if(empty($message)){
+		$sql = 'UPDATE '.MAIN_DB_PREFIX."gestion_flotte_alerte SET valeur = '".$km."' WHERE nom = 'kilometrage'";
+		if($db->query($sql)){
+			$message = 'Marge de kilométrage modifiée avec succès';
+			header("Location: ".$_SERVER["PHP_SELF"]."?mainmenu=gestionflotte&leftmenu=configuration&action&action=maintenance&message=".$message);
+
+		}else{
+			$message = 'Un problème est survenu';
 		}
-		print "</table><br>";
+	}
+	$action = 'maintenance';
 
-		$db->free($resql);
-	}
-	else
-	{
-		dol_print_error($db);
-	}
 }
-END MODULEBUILDER DRAFT MYOBJECT */
 
+$erreur = $db->error();
+if(empty($message))
+	$message = GETPOST('message', 'alpha');
+llxHeader("", "Configuration", '', '', 0, 0, '', '', '', 'mod-gestionflotte page-index');
+print '<div><span class="error">'.$erreur.'</span></div>';
 
-print '</div><div class="fichetwothirdright">';
+if(empty($action)){
 
+print load_fiche_titre($langs->trans("Maintenance"), '', 'gestionflotte.png@gestionflotte');
+print '<div class="div-table-responsive-no-min">';
+                    print '<table class="noborder centpercent">';
+                    // Line for title
+                    print '<!-- line title to add new entry -->';
+                    print '<tr class="liste_titre">';
+                    print '<th>Configuration des besoins</th><th></th><th></th>';
+                    print '</tr>';
 
-/* BEGIN MODULEBUILDER LASTMODIFIED MYOBJECT
-// Last modified myobject
-if (isModEnabled('gestionflotte') && $user->hasRight('gestionflotte', 'read')) {
-	$sql = "SELECT s.rowid, s.ref, s.label, s.date_creation, s.tms";
-	$sql.= " FROM ".MAIN_DB_PREFIX."gestionflotte_myobject as s";
-	$sql.= " WHERE s.entity IN (".getEntity($myobjectstatic->element).")";
-	//if ($socid)	$sql.= " AND s.rowid = $socid";
-	$sql .= " ORDER BY s.tms DESC";
-	$sql .= $db->plimit($max, 0);
+                    /*print '<tr class="oddeven nodrag nodrop nohover">';
+                    print '<td><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=configuration&action=modele_numerotation" >Modèles de numérotations des besoins</a></td>';
+                    print '<td></td>';
+                    print '<td></td>';
 
-	$resql = $db->query($sql);
-	if ($resql)
-	{
-		$num = $db->num_rows($resql);
-		$i = 0;
+                    print '</tr>';
+                    print '<tr class="oddeven nodrag nodrop nohover">';
+                    print '<td><a title="Constutition des chiffres sur le bulletin" href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=configuration&action=modele_documents" >Modèles de document des besoins</a></td>';
+                    print '<td></td>';
+                    print '<td></td>';
+                    print '</tr>';*/
 
-		print '<table class="noborder centpercent">';
-		print '<tr class="liste_titre">';
-		print '<th colspan="2">';
-		print $langs->trans("BoxTitleLatestModifiedMyObjects", $max);
-		print '</th>';
-		print '<th class="right">'.$langs->trans("DateModificationShort").'</th>';
-		print '</tr>';
-		if ($num)
-		{
-			while ($i < $num)
-			{
-				$objp = $db->fetch_object($resql);
+                    print '</tr>';
+                    print '<tr class="oddeven nodrag nodrop nohover">';
+                    print '<td><a title="Alerté les utilisateurs dans les traitements des besoins" href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=configuration&action=maintenance" >Maintenances</a></td>';
+                    print '<td></td>';
+                    print '<td></td>';
+                    print '</tr>';
 
-				$myobjectstatic->id=$objp->rowid;
-				$myobjectstatic->ref=$objp->ref;
-				$myobjectstatic->label=$objp->label;
-				$myobjectstatic->status = $objp->status;
-
-				print '<tr class="oddeven">';
-				print '<td class="nowrap">'.$myobjectstatic->getNomUrl(1).'</td>';
-				print '<td class="right nowrap">';
-				print "</td>";
-				print '<td class="right nowrap">'.dol_print_date($db->jdate($objp->tms), 'day')."</td>";
-				print '</tr>';
-				$i++;
-			}
-
-			$db->free($resql);
-		} else {
-			print '<tr class="oddeven"><td colspan="3" class="opacitymedium">'.$langs->trans("None").'</td></tr>';
-		}
-		print "</table><br>";
+            print '</table>';
+            print '</div>';
+}elseif($action == 'maintenance'){
+	print load_fiche_titre($langs->trans("Maintenances"), '', '');
+	$covSql = "SELECT nom, valeur FROM ".MAIN_DB_PREFIX."gestion_flotte_alerte WHERE nom='kilometrage'";
+	$res = $db->query($covSql);
+	if($res){      
+		$obj_alerte = $db->fetch_object($res);
+		
 	}
+    print '<hr>';
+    print '<span style="float:right;"><a title="Voir configuration" href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=configuration">Retour</a></span><br>';
+    //print '<h4>Hierarchie</h4>';
+    print '<table style="width : 100%" class="tagtable liste">';
+    print '<tr class="liste_titre">';
+    print '<td style="padding: 5px; width: '.$largeur.';" colspan="2">Vidange</td>';
+	print '<td style="padding: 5px; width: '.$largeur.';">Valeur</td>';
+    print '</tr>';
+    //ligne 1
+    print '<tr>';
+    print '<form action="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=configuration" method="post">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
+    print '<input type="hidden" name="action" value="edit_Kilometrage">';
+    print '<td style="padding: 5px; width: '.$largeur.';">Kilométrage</td>';
+    print '<td style="padding: 5px; width: '.$largeur.';">Marge kilométrique avant l’alerte de maintenance (vidange).</td>';
+    print '<td>';
+    
+	$info = "Valeur représentant l’écart entre le kilométrage actuel et le kilométrage de maintenance, après lequel la vidange doit être effectuée.";
+    print '<input type="number" name="kilometrage" size = 5 value="'.(GETPOST('kilometrage', 'int')?:$obj_alerte->valeur).'">Km<input class="button" style="padding : 2px;" type="submit" value="valider">';
+    print info_admin($info, '1');
+    print '</td>';
+	
+	print '</form>';
+    print '</tr>';
 }
-*/
 
-print '</div></div>';
 
 // End of page
 llxFooter();
 $db->close();
+
+if($message != ''){		
+	print "<script>
+	$.jnotify('".$message."', {delay : 5000, fadeSpeed: 500});
+	</script>";
+}

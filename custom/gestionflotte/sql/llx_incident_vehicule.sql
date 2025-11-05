@@ -26,6 +26,6 @@ CREATE TABLE llx_incident_vehicule
   numero_rapport            VARCHAR(100), -- Numéro du rapport d’incident (police, assurance…)
   fk_user_creation          integer,
   date_creation             DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (fk_vehicule) REFERENCES vehicles(rowid) ON DELETE CASCADE
+  FOREIGN KEY (fk_vehicule) REFERENCES llx_vehicule(rowid) ON DELETE CASCADE
 
 )ENGINE=innodb;  

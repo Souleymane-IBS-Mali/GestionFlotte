@@ -18,5 +18,6 @@
 --ALTER TABLE llx_type_document DROP COLUMN nom_colonne;
 --ALTER TABLE llx_type_document ADD nom_colonne VARCHAR(50);
 
+--drop table llx_document_vehicule;
 --drop table llx_type_document;
 

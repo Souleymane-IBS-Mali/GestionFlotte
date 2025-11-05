@@ -19,13 +19,18 @@
 CREATE TABLE llx_maintenance_vehicule
 (
   rowid                     integer AUTO_INCREMENT PRIMARY KEY,
+  commentaire               VARCHAR(50),
+  maintenance_reparation    integer, --1 = maintenance, sinon(2) réparation
   fk_vehicule               INT NOT NULL,
   date_maintenance          DATE NOT NULL,
-  maintenance_type          integer,
-  commentaire               TEXT NULL,
+  date_fin                  DATE,
+  prochain_kilometrage      DECIMAL(10,2),
+  travaux_effectue          TEXT,
+  fk_piece_remplacer        VARCHAR(50),
+  fk_type_maintenance       integer,
   cout                      DECIMAL(10,2) NULL,
-  fk_panne                  integer,
+  facture                   VARCHAR(100),
   fk_user_creation          integer,
   date_creation             DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (fk_vehicule) REFERENCES vehicles(rowid) ON DELETE CASCADE
+  FOREIGN KEY (fk_vehicule) REFERENCES llx_vehicule(rowid) ON DELETE CASCADE
 )ENGINE=innodb;  

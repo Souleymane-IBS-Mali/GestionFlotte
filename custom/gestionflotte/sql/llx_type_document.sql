@@ -22,5 +22,7 @@ CREATE TABLE llx_type_document
   nom                       VARCHAR(100),
   commentaire               TEXT,
   fk_user_creation          integer,
+  type                      VARCHAR(15),
+  fk_type_vehicule          VARCHAR(100),
   date_creation             DATETIME DEFAULT CURRENT_TIMESTAMP
 )ENGINE=innodb;  

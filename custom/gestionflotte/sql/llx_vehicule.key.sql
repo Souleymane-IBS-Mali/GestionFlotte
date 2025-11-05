@@ -16,7 +16,14 @@
 --
 -- ========================================================================
 --ALTER TABLE llx_vehicule DROP COLUMN nom_colonne;
---ALTER TABLE llx_vehicule ADD nom_colonne VARCHAR(50);
+ALTER TABLE llx_vehicule ADD kilometrage_calcule VARCHAR(15);
+ALTER TABLE llx_vehicule ADD fk_stationnement integer;
 
---drop table llx_vehicule;
-
+--DROP TABLE llx_assignation_vehicule;
+--DROP TABLE llx_carburant_vehicule;
+--DROP TABLE llx_document_vehicule;
+--DROP TABLE llx_maintenance_vehicule;
+--DROP TABLE llx_document_vehicule;
+--DROP TABLE llx_incident_vehicule;
+--DROP TABLE llx_image_vehicule;
+--DROP TABLE llx_vehicule;

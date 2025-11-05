@@ -1,8 +1,15 @@
 <?php
 /* Copyright (C) 2001-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2004-2015 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@inodbox.com>
+ * Copyright (C) 2004-2013 Laurent Destailleur  <eldy@users.sourceforge.net>
+ * Copyright (C) 2005-2015 Regis Houssin        <regis.houssin@inodbox.com>
+ * Copyright (C) 2015-2020 Juanjo Menent	<jmenent@2byte.es>
  * Copyright (C) 2015      Jean-François Ferry	<jfefe@aternatik.fr>
+ * Copyright (C) 2015      Raphaël Doursenaud   <rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2016      Marcos García        <marcosgdf@gmail.com>
+ * Copyright (C) 2019      Nicolas ZABOURI      <info@inovea-conseil.com>
+ * Copyright (C) 2020      Tobias Sekan         <tobias.sekan@startmail.com>
+ * Copyright (C) 2020      Josep Lluís Amador   <joseplluis@lliuretic.cat>
+ * Copyright (C) 2021      Frédéric France		<frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,225 +26,365 @@
  */
 
 /**
- *	\file       gestionflotte/gestionflotteindex.php
- *	\ingroup    gestionflotte
- *	\brief      Home page of gestionflotte top menu
+ *	\file       htdocs/compta/index.php
+ *	\ingroup    compta
+ *	\brief      Main page of accountancy area
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
-	$res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-}
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) {
-	$i--;
-	$j--;
-}
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) {
-	$res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-}
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) {
-	$res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-}
-// Try main.inc.php using relative path
-if (!$res && file_exists("../main.inc.php")) {
-	$res = @include "../main.inc.php";
-}
-if (!$res && file_exists("../../main.inc.php")) {
-	$res = @include "../../main.inc.php";
-}
-if (!$res && file_exists("../../../main.inc.php")) {
-	$res = @include "../../../main.inc.php";
-}
-if (!$res) {
-	die("Include of main fails");
-}
+require '../main.inc.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/gestionflotte/core/modules/modGestionFlotte.class.php';
+include_once DOL_DOCUMENT_ROOT.'/core/class/dolgraph.class.php';
 
-require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+llxHeader('', "Dépenses | Imputations");
 
-// Load translation files required by the page
-$langs->loadLangs(array("gestionflotte@gestionflotte"));
+print load_fiche_titre("Espace Véhicules", '', 'vehicule');
 
-$action = GETPOST('action', 'aZ09');
-
-$now = dol_now();
-$max = getDolGlobalInt('MAIN_SIZE_SHORTLIST_LIMIT', 5);
-
-// Security check - Protection if external user
-$socid = GETPOST('socid', 'int');
-if (isset($user->socid) && $user->socid > 0) {
-	$action = '';
-	$socid = $user->socid;
-}
-
-// Security check (enable the most restrictive one)
-//if ($user->socid > 0) accessforbidden();
-//if ($user->socid > 0) $socid = $user->socid;
-//if (!isModEnabled('gestionflotte')) {
-//	accessforbidden('Module not enabled');
-//}
-//if (! $user->hasRight('gestionflotte', 'myobject', 'read')) {
-//	accessforbidden();
-//}
-//restrictedArea($user, 'gestionflotte', 0, 'gestionflotte_myobject', 'myobject', '', 'rowid');
-//if (empty($user->admin)) {
-//	accessforbidden('Must be admin');
-//}
-
-
-/*
- * Actions
- */
-
-// None
-
-
-/*
- * View
- */
-
-$form = new Form($db);
-$formfile = new FormFile($db);
-
-llxHeader("", $langs->trans("GestionFlotteArea"), '', '', 0, 0, '', '', '', 'mod-gestionflotte page-index');
-
-print load_fiche_titre($langs->trans("GestionFlotteArea"), '', 'gestionflotte.png@gestionflotte');
+$aujourdhui = date('Y-m-d');
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
+if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+	$sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule";
+else $sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule WHERE fk_user_creation=".$user->id;
+	$res_vehicule = $db->query($sql_vehicule);
+	if($res_vehicule){
+		$num_vehicule = $db->num_rows($res_vehicule);
+	}
+	//$dataseries[] = array("Nombre total de vehicule", $num_vehicule);
 
+	if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+		$sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0";
+	else $sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0 AND fk_user_creation=".$user->id;
 
-/* BEGIN MODULEBUILDER DRAFT MYOBJECT
-// Draft MyObject
-if (isModEnabled('gestionflotte') && $user->hasRight('gestionflotte', 'read')) {
-	$langs->load("orders");
+	$res_vehicule = $db->query($sql_vehicule);
+	if($res_vehicule){
+		$num_vehicule_bon_etat = $db->num_rows($res_vehicule);
+	}
+	$dataseries[] = array("vehicule en bon état", $num_vehicule_bon_etat);
 
-	$sql = "SELECT c.rowid, c.ref, c.ref_client, c.total_ht, c.tva as total_tva, c.total_ttc, s.rowid as socid, s.nom as name, s.client, s.canvas";
-	$sql.= ", s.code_client";
-	$sql.= " FROM ".MAIN_DB_PREFIX."commande as c";
-	$sql.= ", ".MAIN_DB_PREFIX."societe as s";
-	$sql.= " WHERE c.fk_soc = s.rowid";
-	$sql.= " AND c.fk_statut = 0";
-	$sql.= " AND c.entity IN (".getEntity('commande').")";
-	if ($socid)	$sql.= " AND c.fk_soc = ".((int) $socid);
+if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+	$sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 1";
+else $sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 1 AND fk_user_creation=".$user->id;
 
-	$resql = $db->query($sql);
-	if ($resql)
-	{
-		$total = 0;
-		$num = $db->num_rows($resql);
+	$res_vehicule = $db->query($sql_vehicule);
+	if($res_vehicule){
+		$num_vehicule_panne = $db->num_rows($res_vehicule);
+	}
+	$dataseries[] = array("vehicule en panne", $num_vehicule_panne);
 
+	if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+		$sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0 AND rowid IN (SELECT fk_vehicule FROM ".MAIN_DB_PREFIX."assignation_vehicule WHERE date_fin IS NULL OR date_fin >='".$aujourdhui."')";
+	else $sql_vehicule = "SELECT rowid FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0 AND rowid IN (SELECT fk_vehicule FROM ".MAIN_DB_PREFIX."assignation_vehicule WHERE date_fin IS NULL OR date_fin >='".$aujourdhui."') AND fk_user_creation=".$user->id;
+
+	$res_vehicule = $db->query($sql_vehicule);
+	if($res_vehicule){
+		$num_vehicule_assigne = $db->num_rows($res_vehicule);
+	}
+	$dataseries[] = array("vehicule assigné", $num_vehicule_assigne);
+
+	$salarie_societe_graph = '<div class="div-table-responsive-no-min">';
+	$salarie_societe_graph .= '<table class="noborder nohover centpercent">'."\n";
+	$salarie_societe_graph .= '<tr class="liste_titre"><th colspan="2">'.$langs->trans("Statistique - vehicules").'</th></tr>';
+	$dolgraph = new DolGraph();
+	$dolgraph->SetData($dataseries);
+	$dolgraph->setShowLegend(2);
+	$dolgraph->setShowPercent(1);
+	$dolgraph->SetType(array('pie'));
+	$dolgraph->setHeight('200');
+
+	// --- IMPORTANT : couleurs dans le même ordre que $dataseries
+	$colors = array(
+		'#106e05ff',//bon état
+		'#920000ff', //panne
+		'#0b0532ff'//assigné
+	);
+
+$dolgraph->SetDataColor($colors);
+	$dolgraph->draw('idgraphsalariesociete');
+	$salarie_societe_graph .= '<tr><td>'.$dolgraph->show();
+	$salarie_societe_graph .= '</td></tr>';
+	$salarie_societe_graph .= '<tr class="liste_total"><td>Nombre total de véhicule</td><td class="right">';
+	$salarie_societe_graph .= $num_vehicule;
+	$salarie_societe_graph .= '</td></tr>';
+	$salarie_societe_graph .= '</table>';
+	$salarie_societe_graph .= '</div>';
+
+	print $salarie_societe_graph;
+	print '<br>';
+/*
+ * Draft vehicule
+ */
+if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+		$sql_vehicule = "SELECT rowid, reference_interne, fk_user_creation FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0 AND rowid NOT IN (SELECT fk_vehicule FROM ".MAIN_DB_PREFIX."assignation_vehicule WHERE date_fin IS NULL OR date_fin <'".$aujourdhui."')";
+	else $sql_vehicule = "SELECT rowid, reference_interne, fk_user_creation FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0 AND rowid NOT IN (SELECT fk_vehicule FROM ".MAIN_DB_PREFIX."assignation_vehicule WHERE date_fin IS NULL OR date_fin <'".$aujourdhui."') AND fk_user_creation=".$user->id;
+
+	$sql_vehicule .= " ORDER BY date_creation DESC";
+	$res_vehicule = $db->query($sql_vehicule);
+	print $db->error();
+	if ($res_vehicule) {
+		print '<div class="div-table-responsive-no-min">';
 		print '<table class="noborder centpercent">';
 		print '<tr class="liste_titre">';
-		print '<th colspan="3">'.$langs->trans("DraftMyObjects").($num?'<span class="badge marginleftonlyshort">'.$num.'</span>':'').'</th></tr>';
-
-		$var = true;
-		if ($num > 0)
-		{
+		print '<th colspan="2">vehicules non assignés</th></tr>';
+		$langs->load("orders");
+		$num = $db->num_rows($res_vehicule);
+		if ($num) {
 			$i = 0;
-			while ($i < $num)
-			{
+			while ($i < $num) {
+				$obj = $db->fetch_object($res_vehicule);
 
-				$obj = $db->fetch_object($resql);
-				print '<tr class="oddeven"><td class="nowrap">';
-
-				$myobjectstatic->id=$obj->rowid;
-				$myobjectstatic->ref=$obj->ref;
-				$myobjectstatic->ref_client=$obj->ref_client;
-				$myobjectstatic->total_ht = $obj->total_ht;
-				$myobjectstatic->total_tva = $obj->total_tva;
-				$myobjectstatic->total_ttc = $obj->total_ttc;
-
-				print $myobjectstatic->getNomUrl(1);
-				print '</td>';
+				print '<tr class="oddeven">';
 				print '<td class="nowrap">';
-				print '</td>';
-				print '<td class="right" class="nowrap">'.price($obj->total_ttc).'</td></tr>';
+				print "<a href='./onglets/detail_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&id_vehicule=".$obj->rowid."'>".$obj->reference_interne."</a>";
+				print "</td>";
+				print '<td class="nowrap">';
+				$nom_prenon = "";
+				$sql = "SELECT firstname, lastname FROM ".MAIN_DB_PREFIX."user WHERE rowid=".$obj->fk_user_creation;
+				$res = $db->query($sql);
+				if($res){
+					$obj_user = $db->fetch_object($res);
+				$nom_prenon .= $obj_user->lastname." ".$obj_user->firstname;
+
+				}
+		
+				print "<a href='../user/card.php?id=".$obj->fk_user_creation."'>".$nom_prenon."</a>";;
+				print '</td></tr>';
 				$i++;
-				$total += $obj->total_ttc;
 			}
-			if ($total>0)
-			{
-
-				print '<tr class="liste_total"><td>'.$langs->trans("Total").'</td><td colspan="2" class="right">'.price($total)."</td></tr>";
-			}
+		} else {
+			print '<tr class="oddeven"><td colspan="3">'.$langs->trans("Aucun vehicule").'</td></tr>';
 		}
-		else
-		{
-
-			print '<tr class="oddeven"><td colspan="3" class="opacitymedium">'.$langs->trans("NoOrder").'</td></tr>';
-		}
-		print "</table><br>";
-
-		$db->free($resql);
+		print "</table></div><br>";
 	}
-	else
-	{
-		dol_print_error($db);
-	}
-}
-END MODULEBUILDER DRAFT MYOBJECT */
 
 
 print '</div><div class="fichetwothirdright">';
 
 
-/* BEGIN MODULEBUILDER LASTMODIFIED MYOBJECT
-// Last modified myobject
-if (isModEnabled('gestionflotte') && $user->hasRight('gestionflotte', 'read')) {
-	$sql = "SELECT s.rowid, s.ref, s.label, s.date_creation, s.tms";
-	$sql.= " FROM ".MAIN_DB_PREFIX."gestionflotte_myobject as s";
-	$sql.= " WHERE s.entity IN (".getEntity($myobjectstatic->element).")";
-	//if ($socid)	$sql.= " AND s.rowid = $socid";
-	$sql .= " ORDER BY s.tms DESC";
-	$sql .= $db->plimit($max, 0);
+/*
+ * Latest modified vehicule
+ */
+if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+	$sql_last_modif = "SELECT rowid, reference_interne, fk_user_creation, panne, date_creation FROM ".MAIN_DB_PREFIX."vehicule";
+else $sql_last_modif = "SELECT rowid, reference_interne, fk_user_creation, panne, date_creation FROM ".MAIN_DB_PREFIX."vehicule WHERE fk_user_creation=".$user->id;
 
-	$resql = $db->query($sql);
-	if ($resql)
-	{
-		$num = $db->num_rows($resql);
+$sql_last_modif .= " ORDER BY date_creation DESC";
+
+$resql = $db->query($sql_last_modif);
+if ($resql) {
+	$num = $db->num_rows($resql);
+
+	startSimpleTable($langs->trans("Les 3 derniers véhicules modifiés"), "./gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule", "sortfield=c.tms&sortorder=DESC", 2, -1, 'order');
+
+	if ($num) {
 		$i = 0;
+		$max = 3;
+		while ($i < $num && $i < $max) {
+			$obj = $db->fetch_object($resql);
 
+			print '<tr class="oddeven">';
+			print '<td width="20%" class="nowrap">';
+
+			print '<table class="nobordernopadding"><tr class="nocellnopadd">';
+			print '<td width="96" class="nobordernopadding nowrap">';
+			print img_picto("", "/image_vehicule/".$obj->reference_interne, 'class="paddingright pictofixedwidth"')."<a href='./onglets/detail_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&id_vehicule=".$obj->rowid."'>".$obj->reference_interne."</a>";
+			print '</td>';
+
+			print '<td width="16" class="nobordernopadding nowrap">';
+			print '&nbsp;';
+			print '</td>';
+
+			print '<td width="16" class="nobordernopadding hideonsmartphone right">';
+			print '</td></tr></table>';
+			print '</td>';
+
+			print '<td class="nowrap">';
+			$nom_prenon = "";
+			$sql = "SELECT firstname, lastname FROM ".MAIN_DB_PREFIX."user WHERE rowid=".$obj->fk_user_creation;
+            $res = $db->query($sql);
+            if($res){
+                $obj_user = $db->fetch_object($res);
+               $nom_prenon .= $obj_user->lastname." ".$obj_user->firstname;
+
+            }
+			print "<a href='../user/card.php?id=".$obj->fk_user_creation."'>".$nom_prenon."</a>";			
+			print '</td>';
+
+			print '<td class="center">';
+			print $obj->date_creation;
+			print '</td>';
+
+			//----------------------------
+            $status = '<span style="background-color: #106e05ff; padding: 1px 9px; border-radius: 50%; font-weight: bold;"></span>'; 
+
+            if ($obj->panne) {
+                $status = '<span style="background-color: #920000ff; padding: 1px 9px; border-radius: 50%; font-weight: bold;"></span>'; 
+            }
+
+			print '<td class="right">'.$status.'</td>';
+			print '</tr>';
+			$i++;
+		}
+	}
+	finishSimpleTable(true);
+} else {
+	//dol_print_error($db);
+}
+
+
+/*
+ * vehicule to process
+ */
+
+if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+	$sql_last_modif = "SELECT rowid, reference_interne, fk_user_creation, panne, date_creation FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0 AND rowid IN (SELECT fk_vehicule FROM ".MAIN_DB_PREFIX."assignation_vehicule WHERE date_fin IS NULL OR date_fin >='".$aujourdhui."')";
+else $sql_last_modif = "SELECT rowid, reference_interne, fk_user_creation, panne, date_creation FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 0 AND rowid IN (SELECT fk_vehicule FROM ".MAIN_DB_PREFIX."assignation_vehicule WHERE date_fin IS NULL OR date_fin >='".$aujourdhui."') AND fk_user_creation=".$user->id;
+
+$sql_last_modif .= " ORDER BY date_creation DESC";
+
+$resql = $db->query($sql_last_modif);
+	if ($resql) {
+		$num = $db->num_rows($resql);
+
+		print '<div class="div-table-responsive-no-min">';
 		print '<table class="noborder centpercent">';
 		print '<tr class="liste_titre">';
-		print '<th colspan="2">';
-		print $langs->trans("BoxTitleLatestModifiedMyObjects", $max);
-		print '</th>';
-		print '<th class="right">'.$langs->trans("DateModificationShort").'</th>';
-		print '</tr>';
-		if ($num)
-		{
-			while ($i < $num)
-			{
-				$objp = $db->fetch_object($resql);
+		print '<th colspan="4">'.$langs->trans("Véhicules assignés").' <a href="./creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule"><span class="badge">'.$num.'</span></a></th></tr>';
 
-				$myobjectstatic->id=$objp->rowid;
-				$myobjectstatic->ref=$objp->ref;
-				$myobjectstatic->label=$objp->label;
-				$myobjectstatic->status = $objp->status;
-
+		if ($num) {
+			$i = 0;
+			$max = 3;
+			while ($i < $num && $i < $max) {
+				$obj = $db->fetch_object($resql);
 				print '<tr class="oddeven">';
-				print '<td class="nowrap">'.$myobjectstatic->getNomUrl(1).'</td>';
-				print '<td class="right nowrap">';
-				print "</td>";
-				print '<td class="right nowrap">'.dol_print_date($db->jdate($objp->tms), 'day')."</td>";
+				print '<td class="nowrap" width="20%">';
+
+				print '<table class="nobordernopadding"><tr class="nocellnopadd">';
+				print '<td width="96" class="nobordernopadding nowrap">';
+				print img_picto("", "/image_vehicule/".$obj->reference_interne, 'class="paddingright pictofixedwidth"')."<a href='./onglets/detail_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&id_vehicule=".$obj->rowid."'>".$obj->reference_interne."</a>";
+				print '</td>';
+
+				print '<td width="16" class="nobordernopadding nowrap">';
+				print '&nbsp;';
+				print '</td>';
+
+				print '<td width="16" class="nobordernopadding hideonsmartphone right">';
+				print '</td></tr></table>';
+
+				print '</td>';
+
+				print '<td class="nowrap">';
+				$nom_prenon = "";
+				$sql = "SELECT firstname, lastname FROM ".MAIN_DB_PREFIX."user WHERE rowid=".$obj->fk_user_creation;
+				$res = $db->query($sql);
+				if($res){
+					$obj_user = $db->fetch_object($res);
+				$nom_prenon .= $obj_user->lastname." ".$obj_user->firstname;
+
+				}
+				print "<a href='../user/card.php?id=".$obj->fk_user_creation."'>".$nom_prenon."</a>";
+				print '</td>';
+
+				print '<td class="right">'.$obj->date_creation.'</td>'."\n";
+
+				//----------------------------
+
+			//----------------------------
+            $status = '<span style="background-color: #106e05ff; padding: 1px 9px; border-radius: 50%; font-weight: bold;"></span>'; 
+
+            if ($obj->panne) {
+                $status = '<span style="background-color: #920000ff; padding: 1px 9px; border-radius: 50%; font-weight: bold;"></span>'; 
+            }
+
+				print '<td class="right">'.$status.'</td>';
 				print '</tr>';
 				$i++;
 			}
-
-			$db->free($resql);
-		} else {
-			print '<tr class="oddeven"><td colspan="3" class="opacitymedium">'.$langs->trans("None").'</td></tr>';
+			if ($i < $num) {
+				print '<tr><td><span class="opacitymedium">'.$langs->trans("More").'...</span></td><td></td><td></td><td></td></tr>';
+			}
 		}
-		print "</table><br>";
+
+		print "</table></div><br>";
+	} else {
+		//dol_print_error($db);
 	}
-}
-*/
+
+/*
+ * Orders that are in process
+ */
+if($user->hasRight("gestionflotte", "gestionvehicule", "valider") || $user->hasRight("gestionflotte", "gestionvehicule", "write"))
+	$sql_last_modif = "SELECT rowid, reference_interne, fk_user_creation, panne, date_creation FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 1";
+else $sql_last_modif = "SELECT rowid, reference_interne, fk_user_creation, panne, date_creation FROM ".MAIN_DB_PREFIX."vehicule WHERE panne = 1";
+
+$resql = $db->query($sql_last_modif);
+	if ($resql) {
+		$num = $db->num_rows($resql);
+
+		print '<div class="div-table-responsive-no-min">';
+		print '<table class="noborder centpercent">';
+		print '<tr class="liste_titre">';
+		print '<th colspan="4">'.$langs->trans("Véhicule en panne").' <a href="./creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&action=panne"><span class="badge">'.$num.'</span></a></th></tr>';
+
+		if ($num) {
+			$i = 0;
+			$max = 3;
+			while ($i < $num && $i < $max) {
+				$obj = $db->fetch_object($resql);
+				print '<tr class="oddeven">';
+				print '<td class="nowrap" width="20%">';
+
+				print '<table class="nobordernopadding"><tr class="nocellnopadd">';
+				print '<td width="96" class="nobordernopadding nowrap">';
+				print img_picto("", "maintenance", 'class="paddingright pictofixedwidth"')."<a href='./onglets/detail_vehicule.php?mainmenu=gestionflotte&leftmenu=&leftmenu=listevehicule&id_vehicule=".$obj->rowid."'>".$obj->reference_interne."</a>";
+				print '</td>';
+
+				print '<td width="16" class="nobordernopadding nowrap">';
+				print '&nbsp;';
+				print '</td>';
+
+				print '<td width="16" class="nobordernopadding hideonsmartphone right">';
+				print '</td></tr></table>';
+
+				print '</td>';
+
+				print '<td class="nowrap">';
+				$nom_prenon = "";
+				$sql = "SELECT firstname, lastname FROM ".MAIN_DB_PREFIX."user WHERE rowid=".$obj->fk_user_creation;
+				$res = $db->query($sql);
+				if($res){
+					$obj_user = $db->fetch_object($res);
+				$nom_prenon .= $obj_user->lastname." ".$obj_user->firstname;
+
+				}
+				print "<a href='../user/card.php?id=".$obj->fk_user_creation."'>".$nom_prenon."</a>";
+				print '</td>';
+
+				print '<td class="right">'.$obj->date_creation.'</td>'."\n";
+
+				//----------------------------
+
+            $status = '<span style="background-color: #920000ff; padding: 1px 9px; border-radius: 50%; font-weight: bold;"></span>'; 
+
+			print '<td class="right">'.$status.'</td>';
+				print '</tr>';
+				$i++;
+			}
+			if ($i < $num) {
+				print '<tr><td><span class="opacitymedium">'.$langs->trans("More").'...</span></td><td></td><td></td><td></td></tr>';
+			}
+		}
+
+		print "</table></div><br>";
+	} else {
+		//dol_print_error($db);
+	}
+
 
 print '</div></div>';
 
-// End of page
-llxFooter();
-$db->close();
+//header('Location: ./compta/facture/card.php');
+if($message != ''){		
+	print "<script>
+	$.jnotify('".$message."', {delay : 5000, fadeSpeed: 500});
+	</script>";
+}

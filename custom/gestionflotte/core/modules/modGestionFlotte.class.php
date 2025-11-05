@@ -313,6 +313,12 @@ class modGestionFlotte extends DolibarrModules
 		$this->rights[$r][4] = 'configuration';
 		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->hasRight('gestionflotte', 'configuration', 'write'))
 		$r++;
+
+		$this->rights[$r][0] = $this->numero . sprintf("%02d", ($r * 10) + 2); // Permission id (must not be already used)
+		$this->rights[$r][1] = 'Modifier la configuration'; // Permission label
+		$this->rights[$r][4] = 'configuration';
+		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->hasRight('gestionflotte', 'configuration', 'write'))
+		$r++;
 		
 		/* END MODULEBUILDER PERMISSIONS */
 
@@ -329,7 +335,7 @@ class modGestionFlotte extends DolibarrModules
 			'prefix' => img_picto('', $this->picto, 'class="pictofixedwidth valignmiddle"'),
 			'mainmenu'=>'gestionflotte',
 			'leftmenu'=>'',
-			'url'=>'/gestionflotte/gestionflotteindex.php',
+			'url'=>'/gestionflotte/gestionflotte.php',
 			'langs'=>'gestionflotte@gestionflotte', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000 + $r,
 			'enabled'=>'isModEnabled("gestionflotte")', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled.
@@ -366,7 +372,7 @@ class modGestionFlotte extends DolibarrModules
 			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=gestionvehicule&action=creation',
 			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
 			'target'=>'',
 			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
@@ -382,7 +388,7 @@ class modGestionFlotte extends DolibarrModules
 			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&action=liste',
 			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
 			'target'=>'',
 			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
@@ -392,10 +398,40 @@ class modGestionFlotte extends DolibarrModules
 		$this->menu[$r++]=array(
 			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=listevehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'stationnés',
+			'titre'=>'En bon état',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'vehiculeenbonetat',
+			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&etat=bonetat',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=listevehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'En Panne',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'vehiculeenpanne',
+			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&etat=panne',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=listevehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Stationnés',
 			'mainmenu'=>'gestionflotte',
 			'leftmenu'=>'vehiculestationne',
-			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&action=stationne',
+			'url'=>'/gestionflotte/vehicule_stationne.php?mainmenu=gestionflotte&leftmenu=listevehicule&etat=stationne',
 			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
 			'enabled'=>'$leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
@@ -405,131 +441,67 @@ class modGestionFlotte extends DolibarrModules
 			'object'=>'MyObject'
 		);
 
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=listevehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'En course',
-			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'listetypevehicule',
-			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=listevehicule&action=non_stationne',
-			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-
-		//sous menu type vehicule
-		$this->menu[$r++]=array(
+		//stationnement
+		/*$this->menu[$r++]=array(
 			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=gestionvehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'Nouveau type Vehicule',
-			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'typevehicule',
-			'url'=>'/gestionflotte/creation_type_vehicule.php?mainmenu=gestionflotte&leftmenu=gestionvehicule&action=creation',
-			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=gestionvehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'Liste Type Vehicule',
-			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'listetypevehicule',
-			'url'=>'/gestionflotte/creation_type_vehicule.php?mainmenu=gestionflotte&leftmenu=gestionvehicule&action=liste',
-			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=gestionvehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'Stationnement',
+			'titre'=>'stationnement',
 			'mainmenu'=>'gestionflotte',
 			'leftmenu'=>'stationnement',
-			'url'=>'/gestionflotte/creation_type_vehicule.php?mainmenu=gestionflotte&leftmenu=gestionvehicule&action=liste',
+			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=stationnement&action=liste',
 			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'$leftmenu=="gestionvehicule" || $leftmenu=="creationvehicule" || $leftmenu=="listevehicule" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
 			'target'=>'',
 			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
 			'object'=>'MyObject'
 		);
 
-//Assignation
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=stationnement',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'stationner un vehicule',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'vehiculestationne',
+			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=stationnement&action=stationne',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=stationnement',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste des vehicules stationnés',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=stationnement&action=non_stationne',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);*/
+
+		//Gestion documentation
 		$this->menu[$r++]=array(
 			'fk_menu'=>'fk_mainmenu=gestionflotte',      // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'=>'left',                          // This is a Left menu entry
-			'titre'=>'Assignation',
-			'prefix' => img_picto('', 'assigner', 'class="pictofixedwidth valignmiddle paddingright"'),
+			'titre'=>'Gestion documents',
+			'prefix' => img_picto('', 'papier', 'class="pictofixedwidth valignmiddle paddingright"'),
 			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'assignation',
-			'url'=>'/gestionflotte/assignation.php?mainmenu=gestionflotte&leftmenu=assignation',
+			'leftmenu'=>'gestiondocument',
+			'url'=>'/gestionflotte/gestion_document_garde.php?mainmenu=gestionflotte&leftmenu=gestiondocument',
 			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
 			'enabled'=>'isModEnabled("gestionflotte")', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled.
-			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-		
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=assignation',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'Faire une assignation',
-			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'faireassignation',
-			'url'=>'/gestionflotte/assignation.php?mainmenu=gestionflotte&leftmenu=assignation&action=creation',
-			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="assignation" || $leftmenu=="faireassignation" || $leftmenu=="listeassignation"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=assignation',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'Liste Assignation',
-			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'listeassignation',
-			'url'=>'/gestionflotte/assignation.php?mainmenu=gestionflotte&leftmenu=listeassignation&action=liste',
-			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="assignation" || $leftmenu=="faireassignation" || $leftmenu=="listeassignation"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=listeassignation',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'Assignés',
-			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'listetypevehicule',
-			'url'=>'/gestionflotte/assignation.php?mainmenu=gestionflotte&leftmenu=listeassignation&action=liste_assignes',
-			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="listeassignation"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
 			'target'=>'',
 			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
@@ -537,20 +509,270 @@ class modGestionFlotte extends DolibarrModules
 		);
 
 		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=listeassignation',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=gestiondocument',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'Libres',
+			'titre'=>'Liste complète',
 			'mainmenu'=>'gestionflotte',
-			'leftmenu'=>'listetypevehicule',
-			'url'=>'/gestionflotte/assignation.php?mainmenu=gestionflotte&leftmenu=listeassignation&action=liste_non_assignes',
+			'leftmenu'=>'liste_documentation_complete',
+			'url'=>'/gestionflotte/liste_documentation_complete.php?mainmenu=gestionflotte&leftmenu=gestiondocument&action=creation',
 			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="listeassignation"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'$leftmenu=="gestiondocument"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
+		//Gestion carburant
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte',      // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',                          // This is a Left menu entry
+			'titre'=>'Gestion carburant',
+			'prefix' => img_picto('', 'carburant', 'class="pictofixedwidth valignmiddle paddingright"'),
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'carburant',
+			'url'=>'/gestionflotte/gestion_carburant_garde.php?mainmenu=gestionflotte&leftmenu=carburant',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'isModEnabled("gestionflotte")', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled.
 			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
 			'target'=>'',
 			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
 			'object'=>'MyObject'
 		);
+
+		//sous menu carburant
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=carburant',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Demande carburant',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'nouveaucarburant',
+			'url'=>'/gestionflotte/carburant.php?mainmenu=gestionflotte&leftmenu=carburant&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="carburant"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=carburant',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste des demandes',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listecarburant',
+			'url'=>'/gestionflotte/carburant.php?mainmenu=gestionflotte&leftmenu=carburant&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="carburant"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=carburant',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Statistiques',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'statistique_carburant',
+			'url'=>'/gestionflotte/statistique_carburant.php?mainmenu=gestionflotte&leftmenu=carburant',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="carburant"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		//Maintenance
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte',      // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',                          // This is a Left menu entry
+			'titre'=>'Maintenances',
+			'prefix' => img_picto('', 'maintenance', 'class="pictofixedwidth valignmiddle paddingright"'),
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'maintenance',
+			'url'=>'/gestionflotte/maintenance_garde.php?mainmenu=gestionflotte&leftmenu=maintenance',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'isModEnabled("gestionflotte")', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=maintenance',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Maintenances à vénir',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'maintenance_a_venir',
+			'url'=>'/gestionflotte/liste_maintenance_a_venir.php?mainmenu=gestionflotte&leftmenu=maintenance&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="maintenance"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=maintenance',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Maintenances éffectuées',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'liste_maintenance_complete',
+			'url'=>'/gestionflotte/liste_maintenance_complete.php?mainmenu=gestionflotte&leftmenu=maintenance&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="maintenance"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=maintenance',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Réparations éffectuées',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'liste_reparation_complete',
+			'url'=>'/gestionflotte/liste_reparation_complete.php?mainmenu=gestionflotte&leftmenu=maintenance&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="maintenance"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=maintenance',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Statistiques',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'statistique_maintenance',
+			'url'=>'/gestionflotte/statistique_maintenance.php?mainmenu=gestionflotte&leftmenu=maintenance',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="maintenance"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		//Historique
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte',      // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',                          // This is a Left menu entry
+			'titre'=>'Historique',
+			'prefix' => img_picto('', 'archiver', 'class="pictofixedwidth valignmiddle paddingright"'),
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'historique',
+			'url'=>'/gestionflotte/historique_garde.php?mainmenu=gestionflotte&leftmenu=historique',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'isModEnabled("gestionflotte")', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+	
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=historique',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Assignation',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'assignation',
+			'url'=>'/gestionflotte/assignation.php?mainmenu=gestionflotte&leftmenu=historique&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="historique"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		/*$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=historique',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'stationnement',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'stationnement',
+			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=historique&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="historique"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);*/
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=historique',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Maintenance',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'maintenance',
+			'url'=>'/gestionflotte/historique_maintenance.php?mainmenu=gestionflotte&leftmenu=historique',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="historique"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=historique',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Incident',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'incident',
+			'url'=>'/gestionflotte/creation_vehicule.php?mainmenu=gestionflotte&leftmenu=historique&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="historique"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=historique',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Documention',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'documentation',
+			'url'=>'/gestionflotte/liste_documentation_complete.php?mainmenu=gestionflotte&leftmenu=historique&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="historique"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
 
 		//Configuration
 		$this->menu[$r++]=array(
@@ -570,17 +792,366 @@ class modGestionFlotte extends DolibarrModules
 			'object'=>'MyObject'
 		);
 
+		//sous menu type vehicule
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Type véhicule',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'type_vehicule',
+			'url'=>'/gestionflotte/creation_type_vehicule.php?mainmenu=gestionflotte&leftmenu=type_vehicule&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_vehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Nouveau',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'nouveautypevehicule',
+			'url'=>'/gestionflotte/creation_type_vehicule.php?mainmenu=gestionflotte&leftmenu=type_vehicule&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_vehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_vehicule',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_type_vehicule.php?mainmenu=gestionflotte&leftmenu=type_vehicule&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_vehicule"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
+
+		//sous menu documentation
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Type document',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'type_document',
+			'url'=>'/gestionflotte/creation_type_document.php?mainmenu=gestionflotte&leftmenu=type_document&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "gestionvehicule", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_document',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Nouveau',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'nouveautypedocument',
+			'url'=>'/gestionflotte/creation_type_document.php?mainmenu=gestionflotte&leftmenu=type_document&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_document"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_document',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypedocument',
+			'url'=>'/gestionflotte/creation_type_document.php?mainmenu=gestionflotte&leftmenu=type_document&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_document"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
+		//sous menu Maintenance
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Type maintenance',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'type_maintenance',
+			'url'=>'/gestionflotte/creation_type_maintenance.php?mainmenu=gestionflotte&leftmenu=type_maintenance&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_maintenance',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Nouveau',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'nouveautypemaintenance',
+			'url'=>'/gestionflotte/creation_type_maintenance.php?mainmenu=gestionflotte&leftmenu=type_maintenance&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_maintenance"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_maintenance',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypemaintenance',
+			'url'=>'/gestionflotte/creation_type_maintenance.php?mainmenu=gestionflotte&leftmenu=type_maintenance&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_maintenance"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		//sous carburant type
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Type carburant',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'type_carburant',
+			'url'=>'/gestionflotte/creation_type_carburant.php?mainmenu=gestionflotte&leftmenu=type_carburant&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_carburant',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Nouveau',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'nouveautypecarburant',
+			'url'=>'/gestionflotte/creation_type_carburant.php?mainmenu=gestionflotte&leftmenu=type_carburant&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_carburant"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=type_carburant',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypecarburant',
+			'url'=>'/gestionflotte/creation_type_carburant.php?mainmenu=gestionflotte&leftmenu=type_carburant&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="type_carburant"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
+		//sous menu Panne
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Pièces de remplacement',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'panne',
+			'url'=>'/gestionflotte/creation_piece.php?mainmenu=gestionflotte&leftmenu=panne&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=panne',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Nouvelle pièces',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_piece.php?mainmenu=gestionflotte&leftmenu=panne&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="panne"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=panne',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_piece.php?mainmenu=gestionflotte&leftmenu=panne&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="panne"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
+		//sous menu équipement
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Équipement de bord',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'equipement',
+			'url'=>'/gestionflotte/creation_equipement.php?mainmenu=gestionflotte&leftmenu=equipement&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=equipement',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Nouvel équipement',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_equipement.php?mainmenu=gestionflotte&leftmenu=equipement&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="equipement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=equipement',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_equipement.php?mainmenu=gestionflotte&leftmenu=equipement&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="equipement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
+		//sous menu stationnement
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Lieu de stationnement',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'stationnement',
+			'url'=>'/gestionflotte/creation_stationnement.php?mainmenu=gestionflotte&leftmenu=stationnement&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "write")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=stationnement',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Nouveau lieu',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_stationnement.php?mainmenu=gestionflotte&leftmenu=stationnement&action=creation',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=stationnement',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>'Liste',
+			'mainmenu'=>'gestionflotte',
+			'leftmenu'=>'listetypevehicule',
+			'url'=>'/gestionflotte/creation_stationnement.php?mainmenu=gestionflotte&leftmenu=stationnement&action=liste',
+			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=>'$leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=>'$user->hasRight("gestionflotte", "configuration", "read")',
+			'target'=>'',
+			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
+			'object'=>'MyObject'
+		);
+
+
 		$this->menu[$r++] = array(
 			'fk_menu'=>'fk_mainmenu=gestionflotte,fk_leftmenu=configuration', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'=>'',
 			'titre'=>'A propos',
-			'prefix' => img_picto('', $this->picto, 'class="paddingright pictofixedwidth valignmiddle"'),
 			'mainmenu'=>'gestionflotte',
 			'leftmenu'=>'apropos',
 			'url'=>'/gestionflotte/apropos.php?mainmenu=gestionflotte&leftmenu=configuration',
 			'langs'=>'gestionflotte@gestionflotte',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
-			'enabled'=>'$leftmenu=="configuration"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'$leftmenu=="configuration" || $leftmenu=="equipement" || $leftmenu=="type_carburant" || $leftmenu=="type_maintenance" || $leftmenu=="type_document" || $leftmenu=="type_vehicule" || $leftmenu=="panne" || $leftmenu=="stationnement"', // Define condition to show or hide menu entry. Use 'isModEnabled("gestionflotte")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 			'perms'=>'$user->hasRight("gestionflotte", "configuration", "read")',
 			'target'=>'',
 			'user'=>2,			                // 0=Menu for internal users, 1=external users, 2=both
