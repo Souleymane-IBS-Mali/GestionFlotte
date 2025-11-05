@@ -38,6 +38,7 @@ include_once DOL_DOCUMENT_ROOT.'/core/class/dolgraph.class.php';
 llxHeader('', "Maintenances");
 
 print load_fiche_titre("Statistiques", '', 'maintenance');
+print "<hr>";
 
 $aujourdhui = date('Y-m-d');
 
@@ -45,7 +46,45 @@ if($user->id == 1 || $user->hasRight("gestionflotte", "gestionvehicule", "write"
 //Statistiques de l'année en cours
 //-------------------------------------------------------------------------------------------------------------------------------------------
     // Tableau des mois
-	$annee_rechercher = date('Y');
+	// Tableau des mois
+	$annee_rechercher = GETPOST('annee', 'int')?:date('Y');
+
+	//Filtre par année
+					print "<div style='float: right; margin-right:'30px'>";
+					print '<form name="add" method="POST" action="'.$_SERVER['PHP_SELF'].'?mainmenu=gestionflotte&leftmenu=maintenance&id_vehicule='.$id_vehicule.'">';
+					print '<input type="hidden" name="token" value="'.newToken().'">';
+					print '<input type="hidden" name="action" value="save_edit">';
+					$info = "Les années affichées sont les années auquelles ce salarié à au moins un bulletin";
+					print info_admin($langs->trans($info), 1)."<select style='font-size: 24px; font-weight: bold;' name='annee_rechercher' id='annee_rechercher'><option value='0'></option>";
+					//affichage de la zone de recherche année
+					//les valeurs son uniquement les années au cours desquelles le salarié a au moins un bulletin
+					$sql_verif = "SELECT DISTINCT YEAR(date_demande) as annee FROM ".MAIN_DB_PREFIX."carburant_vehicule WHERE fk_vehicule = ".$id_vehicule;
+						$res_verif = $db->query($sql_verif);
+						$annee_tab = array();
+							if($res_verif){
+								$i = 0;
+								$nb = $db->num_rows($res_verif);
+								while($obj_verif = $db->fetch_object($res_verif)){
+									$annee_tab[] = $obj_verif->annee;
+									if($obj_verif->annee == $annee_rechercher)
+										print "<option value='".$obj_verif->annee."' selected >".$obj_verif->annee."</option>";
+									else 
+										print "<option value='".$obj_verif->annee."'>".$obj_verif->annee."</option>";
+
+									$i ++;
+								}
+							}
+								if($nb == 0){
+									print "<option value='".date("Y")."' selected >".date("Y")."</option>";
+								}elseif(!in_array(date("Y"), $annee_tab))
+									if($annee_rechercher == date("Y"))
+										print "<option value='".date("Y")."' selected>".date("Y")."</option>";
+									else print "<option value='".date("Y")."' >".date("Y")."</option>";
+							
+							print '<input class="button"  type="submit" value="Afficher">';
+							print'</form>';
+					print "</div>";
+
     $months = [
         'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'

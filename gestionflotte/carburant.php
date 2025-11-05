@@ -897,6 +897,7 @@ $arret = GETPOST('arret','int')?:0;
 $nb_page = GETPOST('nbpage','int')?:1;
 $tri = GETPOST('tri','alpha');
 $etat = GETPOST('etat','alpha');
+
 				$recherche_vehicule = GETPOST("recherche_vehicule", "int");
 				$recherche_type_carburant = GETPOST("recherche_type_carburant", "int");
 				$recherche_libelle = GETPOST("recherche_libelle", "alpha");
@@ -908,8 +909,7 @@ $etat = GETPOST('etat','alpha');
 				$recherche_kilometre1 = GETPOST("recherche_kilometre1", "alpha");
 				$recherche_kilometre2 = GETPOST("recherche_kilometre2", "alpha");
 
-
-if($action == "liste" || $action == "rechercher" || $action == "valider" || $action == "rejeter" || $action == "approuver" || $action == "soumis"){
+if(in_array($action, ["liste", "rechercher", "valider", "rejeter", "approuver", "soumis"])){
 	$obj_liste = array();
     //print_barre_liste("", $page, $_SERVER["PHP_SELF"], "", "", "", "", "", "", 'bill', 0, dolGetButtonTitle("Créer un nouveau type de salarié", '', 'fa fa-plus-circle', $_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=carburant&action=creation', '', 1), '', 0, 0, 0, 1);
 

@@ -330,17 +330,17 @@ if($action == "creation"){
 $limit = GETPOST('limit','alpha')?:20;
 $arret = GETPOST('arret','int')?:0;
 $nb_page = GETPOST('nbpage','int')?:1;
-				$etat = GETPOST("etat", "alpha");
-			if($action == "rechercher"){
-				$recherche_reference = GETPOST("recherche_reference", "alpha");
-				$recherche_nom = GETPOST("recherche_nom", "alpha");
-				$recherche_numero_chassis = GETPOST("recherche_numero_chassis", "alpha");
-				$recherche_code_immobilisation = GETPOST("recherche_code_immobilisation", "alpha");
-				$recherche_plaque_immatriculation = GETPOST("recherche_plaque_immatriculation", "alpha");
-				$recherche_type = GETPOST("recherche_type", "int");
-				$recherche_numero_chassis = GETPOST("recherche_numero_chassis", "alpha");
-				$recherche_fk_stationnement = GETPOST("recherche_fk_stationnement", "alpha");
-			}
+$etat = GETPOST("etat", "alpha");
+
+$recherche_reference = GETPOST("recherche_reference", "alpha");
+$recherche_nom = GETPOST("recherche_nom", "alpha");
+
+$recherche_numero_chassis = GETPOST("recherche_numero_chassis", "alpha");
+$recherche_code_immobilisation = GETPOST("recherche_code_immobilisation", "alpha");
+$recherche_plaque_immatriculation = GETPOST("recherche_plaque_immatriculation", "alpha");
+$recherche_type = GETPOST("recherche_type", "int");
+$recherche_numero_chassis = GETPOST("recherche_numero_chassis", "alpha");
+$recherche_fk_stationnement = GETPOST("recherche_fk_stationnement", "alpha");
 
 if($action == "liste" || $action == "rechercher"){
 	$obj_liste = array();
@@ -576,14 +576,15 @@ if($action == "liste" || $action == "rechercher"){
 	print '<br>	<a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule" class="button" style="padding: 4px" >Annuler</a>';
 	print '</td></tr>';
 
+	
  print '<tr class="liste_titre">';
-  print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=reference" title="Trié par la reference interne" >Ref.</a></label></td>';
- print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=nom" title="Trié par nom">Nom</a></label></td>';
- print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=chassis" title="Trié par numéro de chassis">N° chassis</a></label></td>';
- print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=code" title="Trié par code immatriculation">Code Immob.</a></label></td>';
- print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=plaque" title="Trié par plaque immatriculation">Plaque immat</a></label></td>';
- print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=type" title="Trié par nom de type véhicule">Type</a></label></td>';
-  print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=stationnement" title="Trié par le lieu de stationnement">Lieu station.</a></label></td>';
+  print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=reference&limit='.$limit.'&arret='.$arret.'&nbpage='.$nb_page.'&action=rechercher&recherche_reference='.$recherche_reference.'&recherche_nom='.$recherche_nom.'&recherche_type='.$recherche_type.'&recherche_numero_chassis='.$recherche_numero_chassis.'&recherche_code_immobilisation='.$recherche_code_immobilisation.'&recherche_plaque_immatriculation='.$recherche_plaque_immatriculation.'&recherche_type_document='.$recherche_type_document.'&etat='.$etat.'" title="Trié par la reference interne" >Ref.</a></label></td>';
+ print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=nom&limit='.$limit.'&arret='.$arret.'&nbpage='.$nb_page.'&action=rechercher&recherche_reference='.$recherche_reference.'&recherche_nom='.$recherche_nom.'&recherche_type='.$recherche_type.'&recherche_numero_chassis='.$recherche_numero_chassis.'&recherche_code_immobilisation='.$recherche_code_immobilisation.'&recherche_plaque_immatriculation='.$recherche_plaque_immatriculation.'&recherche_type_document='.$recherche_type_document.'&etat='.$etat.'" title="Trié par nom">Nom</a></label></td>';
+ print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=chassis&limit='.$limit.'&arret='.$arret.'&nbpage='.$nb_page.'&action=rechercher&recherche_reference='.$recherche_reference.'&recherche_nom='.$recherche_nom.'&recherche_type='.$recherche_type.'&recherche_numero_chassis='.$recherche_numero_chassis.'&recherche_code_immobilisation='.$recherche_code_immobilisation.'&recherche_plaque_immatriculation='.$recherche_plaque_immatriculation.'&recherche_type_document='.$recherche_type_document.'&etat='.$etat.'" title="Trié par numéro de chassis">N° chassis</a></label></td>';
+ print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=code&limit='.$limit.'&arret='.$arret.'&nbpage='.$nb_page.'&action=rechercher&recherche_reference='.$recherche_reference.'&recherche_nom='.$recherche_nom.'&recherche_type='.$recherche_type.'&recherche_numero_chassis='.$recherche_numero_chassis.'&recherche_code_immobilisation='.$recherche_code_immobilisation.'&recherche_plaque_immatriculation='.$recherche_plaque_immatriculation.'&recherche_type_document='.$recherche_type_document.'&etat='.$etat.'" title="Trié par code immatriculation">Code Immob.</a></label></td>';
+ print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=plaque&limit='.$limit.'&arret='.$arret.'&nbpage='.$nb_page.'&action=rechercher&recherche_reference='.$recherche_reference.'&recherche_nom='.$recherche_nom.'&recherche_type='.$recherche_type.'&recherche_numero_chassis='.$recherche_numero_chassis.'&recherche_code_immobilisation='.$recherche_code_immobilisation.'&recherche_plaque_immatriculation='.$recherche_plaque_immatriculation.'&recherche_type_document='.$recherche_type_document.'&etat='.$etat.'" title="Trié par plaque immatriculation">Plaque immat</a></label></td>';
+ print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=type&limit='.$limit.'&arret='.$arret.'&nbpage='.$nb_page.'&action=rechercher&recherche_reference='.$recherche_reference.'&recherche_nom='.$recherche_nom.'&recherche_type='.$recherche_type.'&recherche_numero_chassis='.$recherche_numero_chassis.'&recherche_code_immobilisation='.$recherche_code_immobilisation.'&recherche_plaque_immatriculation='.$recherche_plaque_immatriculation.'&recherche_type_document='.$recherche_type_document.'&etat='.$etat.'" title="Trié par nom de type véhicule">Type</a></label></td>';
+  print '<td align="center" style="25%; color: darkblue;" ><label><a href="'.$_SERVER["PHP_SELF"].'?mainmenu=gestionflotte&leftmenu=listevehicule&tri=stationnement&limit='.$limit.'&arret='.$arret.'&nbpage='.$nb_page.'&action=rechercher&recherche_reference='.$recherche_reference.'&recherche_nom='.$recherche_nom.'&recherche_type='.$recherche_type.'&recherche_numero_chassis='.$recherche_numero_chassis.'&recherche_code_immobilisation='.$recherche_code_immobilisation.'&recherche_plaque_immatriculation='.$recherche_plaque_immatriculation.'&recherche_type_document='.$recherche_type_document.'&etat='.$etat.'" title="Trié par le lieu de stationnement">Lieu station.</a></label></td>';
 
  print '</tr>';
 	$acts[0] = "activation";
